@@ -304,10 +304,10 @@ public class Worker {
 
         lines.skip(1).forEach(line -> {
             // split by comma
-            String[] tokens = line.split(",", -1);
+            String[] tokens = line.split(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)", -1);
             Integer userId = Integer.parseInt(tokens[0]);
             Integer movieId = Integer.parseInt(tokens[1]);
-            String tag = tokens[2];
+            String tag = tokens[2].replaceAll("\\\"", "");
             Integer timestamp = Integer.parseInt(tokens[3]);
 
             Iterable<OrientVertex> moviesRs = graph.command(new OSQLSynchQuery<OrientVertex>(
