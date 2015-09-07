@@ -81,7 +81,8 @@ public class Worker {
         });
         graph.commit();
 
-        logger.info("Genres added.");
+        logger.info("Genres added. [{}]", graph.countVertices("Genre"));
+
     }
 
     public void addUsers() throws IOException {
@@ -131,7 +132,7 @@ public class Worker {
         });
         graph.commit();
 
-        logger.info("Users added.");
+        logger.info("Users added. [{}]", graph.countVertices("User"));
     }
 
     public void addMovies() throws IOException {
@@ -190,7 +191,7 @@ public class Worker {
         });
         graph.commit();
 
-        logger.info("Movies added.");
+        logger.info("Movies added. [{}]", graph.countVertices("Movie"));
     }
 
     public void connectMoviesWithGenres() throws IOException {
@@ -233,7 +234,7 @@ public class Worker {
 
         graph.commit();
 
-        logger.info("Movies and Genres are connected.");
+        logger.info("Movies and Genres are connected. [{}]", graph.countEdges("is_genre"));
     }
 
     public void rateMovies() throws IOException {
@@ -286,7 +287,7 @@ public class Worker {
         });
 
         graph.commit();
-        logger.info("Movies and Users are connected. (rates)");
+        logger.info("Movies and Users are connected. (rates) [{}]", graph.countEdges("Rate"));
     }
 
     public void tagMovies() throws IOException {
@@ -339,7 +340,7 @@ public class Worker {
         });
 
         graph.commit();
-        logger.info("Tagging finished.");
+        logger.info("Tagging finished. [{}]", graph.countEdges("Tag"));
     }
 
     public static int randInt(int min, int max) {
