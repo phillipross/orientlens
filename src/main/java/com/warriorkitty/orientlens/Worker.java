@@ -7,6 +7,8 @@ import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -18,19 +20,24 @@ import java.util.stream.Stream;
 // it's called mostly from Main.java
 public class Worker {
 
+    private static final Logger logger = LoggerFactory.getLogger(Worker.class);
+
+    private String movieLensPath;
+
     // graph instance
     public OrientGraph graph;
 
-    public Worker(OrientGraph graph) {
+    public Worker(OrientGraph graph, String movieLensPath) {
         this.graph = graph;
+        this.movieLensPath = movieLensPath;
     }
 
     public void addGenres() throws IOException {
 
-        Logger.log("Adding Genres.");
+        logger.info("Adding Genres.");
 
         // get lines as stream
-        Stream<String> lines = Files.lines(Paths.get(Config.MOVIELENS_PATH + "movies.csv"));
+        Stream<String> lines = Files.lines(Paths.get(movieLensPath + "movies.csv"));
 
         // set will always have unique values
         Set<String> genres = new HashSet<>();
@@ -42,7 +49,7 @@ public class Worker {
             genres.addAll(Arrays.asList(tokens[2].split("\\|")));
         });
 
-        Logger.log("Genres loaded from CSV into HashSet.");
+        logger.info("Genres loaded from CSV into HashSet.");
 
         // create a class
         // execute it outside a transaction because this class needs to be created before adding genres
@@ -74,15 +81,15 @@ public class Worker {
         });
         graph.commit();
 
-        Logger.log("Genres added.");
+        logger.info("Genres added.");
     }
 
     public void addUsers() throws IOException {
 
-        Logger.log("Adding Users.");
+        logger.info("Adding Users.");
 
         // get lines as stream
-        Stream<String> lines = Files.lines(Paths.get(Config.MOVIELENS_PATH + "ratings.csv"));
+        Stream<String> lines = Files.lines(Paths.get(movieLensPath + "ratings.csv"));
 
         // set will always have unique values
         Set<Integer> users = new HashSet<>();
@@ -93,7 +100,7 @@ public class Worker {
             users.add(Integer.parseInt(tokens[0]));
         });
 
-        Logger.log("Users loaded from CSV into HashSet.");
+        logger.info("Users loaded from CSV into HashSet.");
 
         // create a class
         graph.executeOutsideTx(iArgument -> {
@@ -124,15 +131,15 @@ public class Worker {
         });
         graph.commit();
 
-        Logger.log("Users added.");
+        logger.info("Users added.");
     }
 
     public void addMovies() throws IOException {
 
-        Logger.log("Adding Movies.");
+        logger.info("Adding Movies.");
 
         // get lines as stream
-        Stream<String> lines = Files.lines(Paths.get(Config.MOVIELENS_PATH + "movies.csv"));
+        Stream<String> lines = Files.lines(Paths.get(movieLensPath + "movies.csv"));
 
         // set will always have unique values
         Map<Integer, String> movies = new HashMap<>();
@@ -145,7 +152,7 @@ public class Worker {
             movies.put(movieId, movie);
         });
 
-        Logger.log("Movies loaded from CSV into HashMap.");
+        logger.info("Movies loaded from CSV into HashMap.");
 
         // create a class
         // execute it outside a transaction because this class needs to be created before adding movies
@@ -182,13 +189,14 @@ public class Worker {
             }
         });
         graph.commit();
-        Logger.log("Movies added.");
+
+        logger.info("Movies added.");
     }
 
     public void connectMoviesWithGenres() throws IOException {
-        Logger.log("Connecting Movies with Genres.");
+        logger.info("Connecting Movies with Genres.");
         // get lines as stream
-        Stream<String> lines = Files.lines(Paths.get(Config.MOVIELENS_PATH + "movies.csv"));
+        Stream<String> lines = Files.lines(Paths.get(movieLensPath + "movies.csv"));
 
         // could go forEachOrdered but it doesn't matter in this case
         lines.skip(1).forEach(line -> {
@@ -225,11 +233,11 @@ public class Worker {
 
         graph.commit();
 
-        Logger.log("Movies and Genres are connected.");
+        logger.info("Movies and Genres are connected.");
     }
 
     public void rateMovies() throws IOException {
-        Logger.log("Connecting Movies with Users (rates).");
+        logger.info("Connecting Movies with Users (rates).");
 
         graph.executeOutsideTx(arg -> {
 
@@ -247,7 +255,7 @@ public class Worker {
         });
 
         // get lines as stream
-        Stream<String> lines = Files.lines(Paths.get(Config.MOVIELENS_PATH + "ratings.csv"));
+        Stream<String> lines = Files.lines(Paths.get(movieLensPath + "ratings.csv"));
 
         lines.skip(1).forEach(line -> {
             // split by comma
@@ -268,7 +276,7 @@ public class Worker {
             if (moviesRs.iterator().hasNext() && userRs.iterator().hasNext()) {
                 OrientVertex movieVertex = moviesRs.iterator().next();
                 OrientVertex userVertex = userRs.iterator().next();
-                userVertex.addEdge("Rate", movieVertex, new Object[]{"rating", rating, "timestamp", timestamp});
+                userVertex.addEdge("Rate", movieVertex, new Object[] {"rating", rating, "timestamp", timestamp});
             }
 
             // worked faster for me
@@ -278,11 +286,11 @@ public class Worker {
         });
 
         graph.commit();
-        Logger.log("Movies and Users are connected. (rates)");
+        logger.info("Movies and Users are connected. (rates)");
     }
 
     public void tagMovies() throws IOException {
-        Logger.log("Tagging movies.");
+        logger.info("Tagging movies.");
 
         graph.executeOutsideTx(arg -> {
 
@@ -300,7 +308,7 @@ public class Worker {
         });
 
         // get lines as stream
-        Stream<String> lines = Files.lines(Paths.get(Config.MOVIELENS_PATH + "tags.csv"));
+        Stream<String> lines = Files.lines(Paths.get(movieLensPath + "tags.csv"));
 
         lines.skip(1).forEach(line -> {
             // split by comma
@@ -321,7 +329,7 @@ public class Worker {
             if (moviesRs.iterator().hasNext() && userRs.iterator().hasNext()) {
                 OrientVertex movieVertex = moviesRs.iterator().next();
                 OrientVertex userVertex = userRs.iterator().next();
-                userVertex.addEdge("Tag", movieVertex, new Object[]{"tag", tag, "timestamp", timestamp});
+                userVertex.addEdge("Tag", movieVertex, new Object[] {"tag", tag, "timestamp", timestamp});
             }
 
             // worked faster for me
@@ -331,11 +339,13 @@ public class Worker {
         });
 
         graph.commit();
-        Logger.log("Tagging finished.");
+        logger.info("Tagging finished.");
     }
 
     public static int randInt(int min, int max) {
         Random rand = new Random();
         return rand.nextInt((max - min) + 1) + min;
     }
+
+
 }

@@ -1,0 +1,12 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="MovieLens OrientDB Test Suite" verbose="1">
+
+    <test name="Import Test">
+        <parameter name="properties.filename" value="import.properties"/>
+        <classes>
+            <class name="com.warriorkitty.orientlens.ImportTest"/>
+        </classes>
+    </test>
+
+</suite>
+
