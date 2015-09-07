@@ -35,6 +35,7 @@ public class Worker {
     public void addGenres() throws IOException {
 
         logger.info("Adding Genres.");
+        long timerStart = System.currentTimeMillis();
 
         // get lines as stream
         Stream<String> lines = Files.lines(Paths.get(movieLensPath + "movies.csv"));
@@ -81,13 +82,15 @@ public class Worker {
         });
         graph.commit();
 
-        logger.info("Genres added. [{}]", graph.countVertices("Genre"));
+        long timerFinish = System.currentTimeMillis();
+        logger.info("Genres added. [{} in {} ms.]", graph.countVertices("Genre"), (timerFinish - timerStart));
 
     }
 
     public void addUsers() throws IOException {
 
         logger.info("Adding Users.");
+        long timerStart = System.currentTimeMillis();
 
         // get lines as stream
         Stream<String> lines = Files.lines(Paths.get(movieLensPath + "ratings.csv"));
@@ -132,12 +135,14 @@ public class Worker {
         });
         graph.commit();
 
-        logger.info("Users added. [{}]", graph.countVertices("User"));
+        long timerFinish = System.currentTimeMillis();
+        logger.info("Users added. [{} in {} ms.]", graph.countVertices("User"), (timerFinish - timerStart));
     }
 
     public void addMovies() throws IOException {
 
         logger.info("Adding Movies.");
+        long timerStart = System.currentTimeMillis();
 
         // get lines as stream
         Stream<String> lines = Files.lines(Paths.get(movieLensPath + "movies.csv"));
@@ -191,11 +196,14 @@ public class Worker {
         });
         graph.commit();
 
-        logger.info("Movies added. [{}]", graph.countVertices("Movie"));
+        long timerFinish = System.currentTimeMillis();
+        logger.info("Movies added. [{} in {} ms.]", graph.countVertices("Movie"), (timerFinish - timerStart));
     }
 
     public void connectMoviesWithGenres() throws IOException {
         logger.info("Connecting Movies with Genres.");
+        long timerStart = System.currentTimeMillis();
+
         // get lines as stream
         Stream<String> lines = Files.lines(Paths.get(movieLensPath + "movies.csv"));
 
@@ -234,11 +242,13 @@ public class Worker {
 
         graph.commit();
 
-        logger.info("Movies and Genres are connected. [{}]", graph.countEdges("is_genre"));
+        long timerFinish = System.currentTimeMillis();
+        logger.info("Movies and Genres are connected. [{} in {} ms.]", graph.countEdges("is_genre"), (timerFinish - timerStart));
     }
 
     public void rateMovies() throws IOException {
         logger.info("Connecting Movies with Users (rates).");
+        long timerStart = System.currentTimeMillis();
 
         graph.executeOutsideTx(arg -> {
 
@@ -287,11 +297,14 @@ public class Worker {
         });
 
         graph.commit();
-        logger.info("Movies and Users are connected. (rates) [{}]", graph.countEdges("Rate"));
+
+        long timerFinish = System.currentTimeMillis();
+        logger.info("Movies and Users are connected. (rates) [{} in {} ms.]", graph.countEdges("Rate"), (timerFinish - timerStart));
     }
 
     public void tagMovies() throws IOException {
         logger.info("Tagging movies.");
+        long timerStart = System.currentTimeMillis();
 
         graph.executeOutsideTx(arg -> {
 
@@ -340,7 +353,9 @@ public class Worker {
         });
 
         graph.commit();
-        logger.info("Tagging finished. [{}]", graph.countEdges("Tag"));
+
+        long timerFinish = System.currentTimeMillis();
+        logger.info("Tagging finished. [{} in {} ms.]", graph.countEdges("Tag"), (timerFinish - timerStart));
     }
 
     public static int randInt(int min, int max) {
