@@ -3,6 +3,7 @@ package com.warriorkitty.orientlens;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
+import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
@@ -83,7 +84,10 @@ public class Worker {
         });
         graph.commit();
         long timerFinish = System.currentTimeMillis();
-        logger.info("Genres added. [{} in {} ms.]", graph.countVertices("Genre"), (timerFinish - timerStart));
+        long totalTime = (timerFinish - timerStart);
+        long recordCount = graph.countVertices("Genre");
+        float msPerRecordRate = (float)totalTime / (float)recordCount;
+        logger.info("Genres added. [{} in {} ms ({} ms/record)]", recordCount, totalTime, msPerRecordRate);
 
     }
 
@@ -135,7 +139,10 @@ public class Worker {
         });
         graph.commit();
         long timerFinish = System.currentTimeMillis();
-        logger.info("Users added. [{} in {} ms.]", graph.countVertices("User"), (timerFinish - timerStart));
+        long totalTime = (timerFinish - timerStart);
+        long recordCount = graph.countVertices("User");
+        float msPerRecordRate = (float)totalTime / (float)recordCount;
+        logger.info("Users added. [{} in {} ms ({} ms/record)]", recordCount, totalTime, msPerRecordRate);
     }
 
 
@@ -195,7 +202,10 @@ public class Worker {
         });
         graph.commit();
         long timerFinish = System.currentTimeMillis();
-        logger.info("Movies added. [{} in {} ms.]", graph.countVertices("Movie"), (timerFinish - timerStart));
+        long totalTime = (timerFinish - timerStart);
+        long recordCount = graph.countVertices("Movie");
+        float msPerRecordRate = (float)totalTime / (float)recordCount;
+        logger.info("Movies added. [{} in {} ms. ({} ms/record)]", recordCount, totalTime, msPerRecordRate);
     }
 
 
@@ -231,15 +241,18 @@ public class Worker {
             Iterable<OrientVertex> moviesRs = graph.command(new OSQLSynchQuery<OrientVertex>(
                     String.format("select from Movie where movieId = %d", movieId)
             )).execute();
+            /*Iterable<Vertex> moviesRs = graph.getVertices("Movie.movieId", movieId);*/
 
             if (moviesRs.iterator().hasNext()) {
                 OrientVertex movieVertex = moviesRs.iterator().next();
+                /*Vertex movieVertex = moviesRs.iterator().next();*/
                 Arrays.stream(genres).forEach(genre -> {
                     // result set
                     Iterable<OrientVertex> genresRs = graph.command(new OSQLSynchQuery<OrientVertex>(
                             String.format("select from Genre where name = \"%s\"", genre)
                     )).execute();
                     OrientVertex genreVertex = genresRs.iterator().next();
+                    /*Vertex genreVertex = graph.getVertices("Genre.name", genre).iterator().next();*/
 
                     graph.addEdge(null, movieVertex, genreVertex, "is_genre");
                 });
@@ -253,7 +266,10 @@ public class Worker {
         });
         graph.commit();
         long timerFinish = System.currentTimeMillis();
-        logger.info("Movies and Genres are connected. [{} in {} ms.]", graph.countEdges("is_genre"), (timerFinish - timerStart));
+        long totalTime = (timerFinish - timerStart);
+        long recordCount = graph.countEdges("is_genre");
+        float msPerRecordRate =  (float)totalTime / (float)recordCount;
+        logger.info("Movies and Genres are connected. [{} in {} ms ({} ms/record)]", recordCount, totalTime, msPerRecordRate);
     }
 
 
@@ -294,10 +310,16 @@ public class Worker {
                     String.format("select from User where userId = %d", userId)
             )).execute();
 
+            /*Iterable<Vertex> moviesRs = graph.getVertices("Movie.movieId", movieId);
+            Iterable<Vertex> userRs = graph.getVertices("User.movieId", userId);*/
+
             if (moviesRs.iterator().hasNext() && userRs.iterator().hasNext()) {
                 OrientVertex movieVertex = moviesRs.iterator().next();
                 OrientVertex userVertex = userRs.iterator().next();
                 userVertex.addEdge("Rate", movieVertex, new Object[] {"rating", rating, "timestamp", timestamp});
+                /*Vertex movieVertex = moviesRs.iterator().next();
+                Vertex userVertex = userRs.iterator().next();
+                ((OrientVertex)userVertex).addEdge("Rate", (OrientVertex)movieVertex, new Object[] {"rating", rating, "timestamp", timestamp});*/
             }
 
             // worked faster for me
@@ -307,7 +329,10 @@ public class Worker {
         });
         graph.commit();
         long timerFinish = System.currentTimeMillis();
-        logger.info("Movies and Users are connected. (rates) [{} in {} ms.]", graph.countEdges("Rate"), (timerFinish - timerStart));
+        long totalTime = (timerFinish - timerStart);
+        long recordCount = graph.countEdges("Rate");
+        float msPerRecordRate =  (float)totalTime / (float)recordCount;
+        logger.info("Movies and Users are connected. (rates) [{} in {} ms ({} ms/record)]", recordCount, totalTime, msPerRecordRate);
     }
 
 
@@ -361,7 +386,10 @@ public class Worker {
         });
         graph.commit();
         long timerFinish = System.currentTimeMillis();
-        logger.info("Tagging finished. [{} in {} ms.]", graph.countEdges("Tag"), (timerFinish - timerStart));
+        long totalTime = (timerFinish - timerStart);
+        long recordCount = graph.countEdges("Tag");
+        float msPerRecordRate = (float)totalTime / (float)recordCount;
+        logger.info("Tagging finished. [{} in {} ms ({} ms/record)]", recordCount, totalTime, msPerRecordRate);
     }
 
 

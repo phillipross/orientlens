@@ -50,7 +50,6 @@ public class ImportTest {
 
 
     @Test
-    @Parameters()
     public void importTest() {
         Main.main(
                 new String[] {
