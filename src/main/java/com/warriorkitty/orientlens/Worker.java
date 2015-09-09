@@ -238,21 +238,16 @@ public class Worker {
             Integer movieId = Integer.parseInt(tokens[0]);
 
             // result set
-            Iterable<OrientVertex> moviesRs = graph.command(new OSQLSynchQuery<OrientVertex>(
-                    String.format("select from Movie where movieId = %d", movieId)
-            )).execute();
-            /*Iterable<Vertex> moviesRs = graph.getVertices("Movie.movieId", movieId);*/
+            Iterable<Vertex> moviesRs = graph.getVertices("Movie.movieId", movieId);
 
             if (moviesRs.iterator().hasNext()) {
-                OrientVertex movieVertex = moviesRs.iterator().next();
-                /*Vertex movieVertex = moviesRs.iterator().next();*/
+                Vertex movieVertex = moviesRs.iterator().next();
                 Arrays.stream(genres).forEach(genre -> {
                     // result set
                     Iterable<OrientVertex> genresRs = graph.command(new OSQLSynchQuery<OrientVertex>(
                             String.format("select from Genre where name = \"%s\"", genre)
                     )).execute();
                     OrientVertex genreVertex = genresRs.iterator().next();
-                    /*Vertex genreVertex = graph.getVertices("Genre.name", genre).iterator().next();*/
 
                     graph.addEdge(null, movieVertex, genreVertex, "is_genre");
                 });
@@ -302,24 +297,13 @@ public class Worker {
             Float rating = Float.parseFloat(tokens[2]);
             Integer timestamp = Integer.parseInt(tokens[3]);
 
-            Iterable<OrientVertex> moviesRs = graph.command(new OSQLSynchQuery<OrientVertex>(
-                    String.format("select from Movie where movieId = %d", movieId)
-            )).execute();
-
-            Iterable<OrientVertex> userRs = graph.command(new OSQLSynchQuery<OrientVertex>(
-                    String.format("select from User where userId = %d", userId)
-            )).execute();
-
-            /*Iterable<Vertex> moviesRs = graph.getVertices("Movie.movieId", movieId);
-            Iterable<Vertex> userRs = graph.getVertices("User.movieId", userId);*/
+            Iterable<Vertex> moviesRs = graph.getVertices("Movie.movieId", movieId);
+            Iterable<Vertex> userRs = graph.getVertices("User.userId", userId);
 
             if (moviesRs.iterator().hasNext() && userRs.iterator().hasNext()) {
-                OrientVertex movieVertex = moviesRs.iterator().next();
-                OrientVertex userVertex = userRs.iterator().next();
-                userVertex.addEdge("Rate", movieVertex, new Object[] {"rating", rating, "timestamp", timestamp});
-                /*Vertex movieVertex = moviesRs.iterator().next();
+                Vertex movieVertex = moviesRs.iterator().next();
                 Vertex userVertex = userRs.iterator().next();
-                ((OrientVertex)userVertex).addEdge("Rate", (OrientVertex)movieVertex, new Object[] {"rating", rating, "timestamp", timestamp});*/
+                ((OrientVertex)userVertex).addEdge("Rate", (OrientVertex)movieVertex, new Object[] {"rating", rating, "timestamp", timestamp});
             }
 
             // worked faster for me
@@ -365,18 +349,13 @@ public class Worker {
             String tag = tokens[2].replaceAll("\\\"", "");
             Integer timestamp = Integer.parseInt(tokens[3]);
 
-            Iterable<OrientVertex> moviesRs = graph.command(new OSQLSynchQuery<OrientVertex>(
-                    String.format("select from Movie where movieId = %d", movieId)
-            )).execute();
-
-            Iterable<OrientVertex> userRs = graph.command(new OSQLSynchQuery<OrientVertex>(
-                    String.format("select from User where userId = %d", userId)
-            )).execute();
+            Iterable<Vertex> moviesRs = graph.getVertices("Movie.movieId", movieId);
+            Iterable<Vertex> userRs = graph.getVertices("User.userId", userId);
 
             if (moviesRs.iterator().hasNext() && userRs.iterator().hasNext()) {
-                OrientVertex movieVertex = moviesRs.iterator().next();
-                OrientVertex userVertex = userRs.iterator().next();
-                userVertex.addEdge("Tag", movieVertex, new Object[] {"tag", tag, "timestamp", timestamp});
+                Vertex movieVertex = moviesRs.iterator().next();
+                Vertex userVertex = userRs.iterator().next();
+                ((OrientVertex)userVertex).addEdge("Tag", (OrientVertex)movieVertex, new Object[] {"tag", tag, "timestamp", timestamp});
             }
 
             // worked faster for me
